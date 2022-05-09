@@ -39,17 +39,16 @@ namespace Leopotam.EcsLite {
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
         IEcsWorldEventListener _eventListeners;
 
-        public void AddEventListener (IEcsWorldEventListener listener) {
+        public void AddEventListener (IEcsWorldEventListener listener) 
+        {
 #if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
             if (listener == null) { throw new Exception ("Listener is null."); }
 #endif
             _eventListeners = listener;
         }
 
-        public void RemoveEventListener () {
-#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
-            if (listener == null) { throw new Exception ("Listener is null."); }
-#endif
+        public void RemoveEventListener () 
+        {
             _eventListeners = null;
         }
 
