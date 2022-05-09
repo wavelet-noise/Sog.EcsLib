@@ -37,26 +37,24 @@ namespace Leopotam.EcsLite {
 
         bool _destroyed;
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
-        List<IEcsWorldEventListener> _eventListeners;
+        IEcsWorldEventListener _eventListeners;
 
         public void AddEventListener (IEcsWorldEventListener listener) {
 #if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
             if (listener == null) { throw new Exception ("Listener is null."); }
 #endif
-            _eventListeners.Add (listener);
+            _eventListeners = listener;
         }
 
-        public void RemoveEventListener (IEcsWorldEventListener listener) {
+        public void RemoveEventListener () {
 #if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
             if (listener == null) { throw new Exception ("Listener is null."); }
 #endif
-            _eventListeners.Remove (listener);
+            _eventListeners = null;
         }
 
         public void RaiseEntityChangeEvent (int entity) {
-            for (int ii = 0, iMax = _eventListeners.Count; ii < iMax; ii++) {
-                _eventListeners[ii].OnEntityChanged (entity);
-            }
+            _eventListeners.OnEntityChanged (entity);
         }
 #endif
 #if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
@@ -101,7 +99,7 @@ namespace Leopotam.EcsLite {
             _masks = new Mask[64];
             _masksCount = 0;
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
-            _eventListeners = new List<IEcsWorldEventListener> (4);
+            _eventListeners = null;
 #endif
             _destroyed = false;
         }
@@ -124,9 +122,7 @@ namespace Leopotam.EcsLite {
             _filtersByIncludedComponents = Array.Empty<List<EcsFilter>> ();
             _filtersByExcludedComponents = Array.Empty<List<EcsFilter>> ();
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
-            for (var ii = _eventListeners.Count - 1; ii >= 0; ii--) {
-                _eventListeners[ii].OnWorldDestroyed (this);
-            }
+            _eventListeners.OnWorldDestroyed (this);
 #endif
         }
 
@@ -154,9 +150,7 @@ namespace Leopotam.EcsLite {
                         _allFilters[i].ResizeSparseIndex (newSize);
                     }
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
-                    for (int ii = 0, iMax = _eventListeners.Count; ii < iMax; ii++) {
-                        _eventListeners[ii].OnWorldResized (newSize);
-                    }
+                    _eventListeners.OnWorldResized (newSize);
 #endif
                 }
                 entity = _entitiesCount++;
@@ -166,9 +160,7 @@ namespace Leopotam.EcsLite {
             _leakedEntities.Add (entity);
 #endif
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
-            for (int ii = 0, iMax = _eventListeners.Count; ii < iMax; ii++) {
-                _eventListeners[ii].OnEntityCreated (entity);
-            }
+            _eventListeners.OnEntityCreated (entity);
 #endif
             return entity;
         }
@@ -177,6 +169,8 @@ namespace Leopotam.EcsLite {
 #if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
             if (entity < 0 || entity >= _entitiesCount) { throw new Exception ("Cant touch destroyed entity."); }
 #endif
+            _eventListeners.PreEntityDestroyed(entity);
+
             ref var entityData = ref Entities[entity];
             if (entityData.Gen < 0) {
                 return;
@@ -203,9 +197,7 @@ namespace Leopotam.EcsLite {
             }
             _recycledEntities[_recycledEntitiesCount++] = entity;
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
-            for (int ii = 0, iMax = _eventListeners.Count; ii < iMax; ii++) {
-                _eventListeners[ii].OnEntityDestroyed (entity);
-            }
+            _eventListeners.OnEntityDestroyed (entity);
 #endif
         }
 
@@ -367,9 +359,7 @@ namespace Leopotam.EcsLite {
                 }
             }
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
-            for (int ii = 0, iMax = _eventListeners.Count; ii < iMax; ii++) {
-                _eventListeners[ii].OnFilterCreated (filter);
-            }
+            _eventListeners.OnFilterCreated (filter);
 #endif
             return (filter, true);
         }
@@ -574,6 +564,7 @@ namespace Leopotam.EcsLite {
     public interface IEcsWorldEventListener {
         void OnEntityCreated (int entity);
         void OnEntityChanged (int entity);
+        void PreEntityDestroyed (int entity);
         void OnEntityDestroyed (int entity);
         void OnFilterCreated (EcsFilter filter);
         void OnWorldResized (int newSize);
