@@ -3,6 +3,8 @@
 // Copyright (c) 2012-2022 Leopotam <leopotam@yandex.ru>
 // ----------------------------------------------------------------------------
 
+#define LEOECSLITE_WORLD_EVENTS
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
