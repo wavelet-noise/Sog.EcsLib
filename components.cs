@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
 #endif
 
-namespace Leopotam.EcsLite {
+namespace Sog.EcsLib {
     public interface IEcsPool {
         void Resize (int capacity);
         bool Has (int entity);
@@ -174,8 +174,12 @@ namespace Leopotam.EcsLite {
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public ref T Get (int entity) {
 #if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
-            if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
-            if (_sparseItems[entity] == 0) { throw new Exception ($"Cant get \"{typeof (T).Name}\" component - not attached."); }
+            if (!_world.IsEntityAliveInternal (entity)) {
+                throw new Exception ("Cant touch destroyed entity.");
+            }
+            if (_sparseItems[entity] == 0) {
+                throw new Exception ($"Cant get \"{typeof (T).Name}\" component - not attached.");
+            }
 #endif
             return ref _denseItems[_sparseItems[entity]];
         }
@@ -183,14 +187,18 @@ namespace Leopotam.EcsLite {
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public bool Has (int entity) {
 #if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
-            if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
+            if (!_world.IsEntityAliveInternal (entity)) {
+                throw new Exception ("Cant touch destroyed entity.");
+            }
 #endif
             return _sparseItems[entity] > 0;
         }
 
         public void Del (int entity) {
 #if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
-            if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
+            if (!_world.IsEntityAliveInternal (entity)) {
+                throw new Exception ("Cant touch destroyed entity.");
+            }
 #endif
             ref var sparseData = ref _sparseItems[entity];
             if (sparseData > 0) {

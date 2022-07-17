@@ -13,7 +13,27 @@ using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
 #endif
 
-namespace Leopotam.EcsLite {
+namespace Sog.EcsLib {
+
+    public class EntityReference
+    {
+        public EntityReference(int i, short g, EcsWorld e)
+        {
+            entityId = i;
+            entityGen = g;
+            world = e;
+        }
+
+        public bool IsStillAlive()
+        {
+            return world.GetEntityGen(entityId) == entityGen;
+        }
+
+        public EcsWorld world;
+        public int entityId = -1;
+        public short entityGen = 0;
+    }
+
 #if ENABLE_IL2CPP
     [Il2CppSetOption (Option.NullChecks, false)]
     [Il2CppSetOption (Option.ArrayBoundsChecks, false)]
@@ -123,6 +143,14 @@ namespace Leopotam.EcsLite {
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
             _eventListeners.OnWorldDestroyed (this);
 #endif
+        }
+
+        public EntityReference GetEnityReference(int ent)
+        {
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
+            if (!IsEntityAliveInternal(ent)) { throw new Exception("Cant touch destroyed entity."); }
+#endif
+            return new EntityReference(ent, GetEntityGen(ent), this);
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
