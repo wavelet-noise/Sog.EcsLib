@@ -24,6 +24,7 @@ namespace Sog.EcsLib {
             world = e;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsStillAlive()
         {
             return world.GetEntityGen(entityId) == entityGen;
